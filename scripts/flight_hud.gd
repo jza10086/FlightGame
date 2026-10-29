@@ -3,6 +3,8 @@ extends Control
 
 var model: FlightModel
 var paused: bool = false
+var mouse_flight: MouseFlightInput
+var mouse_captured: bool = false
 var show_help: bool = true
 var gate_count: int = 0
 var gate_total: int = 5
@@ -79,12 +81,19 @@ func _draw() -> void:
 	draw_rect(Rect2(throttle_x + 20, s.y - 90, 150, 8), Color("32505a"))
 	draw_rect(Rect2(throttle_x + 20, s.y - 90, 150 * model.throttle, 8), accent)
 	_text(Vector2(throttle_x + 20, s.y - 63), "SHIFT +     CTRL −", 12, quiet)
-	var hint: String = "W/S  PITCH    A/D  BANK    Q/E  RUDDER    SPACE  BRAKE    C  CAMERA    H  HELP    ESC  PAUSE"
+	var hint: String = "MOUSE  PITCH / ROLL    W/S A/D  BACKUP    Q/E  RUDDER    SPACE  BRAKE    C  CAMERA    H  HELP    ESC  SETTINGS"
+	if mouse_flight != null and not mouse_flight.enabled:
+		hint = "KEYBOARD MODE    W/S  PITCH    A/D  BANK    Q/E  RUDDER    SPACE  BRAKE    F2  MOUSE ON    ESC  SETTINGS"
 	_panel(Rect2(s.x / 2 - 480, s.y - 42, 960, 30), Color(0.035, 0.11, 0.15, 0.6), 15)
 	_center(Vector2(s.x / 2, s.y - 22), hint, 12, quiet)
 	var instruction: String = ""
 	if model.status == "ready" or model.status == "takeoff":
 		instruction = "Hold SHIFT for power. At 100 km/h, tap S or ↓ to raise the nose."
+		if mouse_flight != null and mouse_flight.enabled:
+			if not mouse_captured:
+				instruction = "CLICK TO CAPTURE MOUSE  ·  Pitch / roll with mouse  ·  ESC releases"
+			else:
+				instruction = "SHIFT for power. At 100 km/h, gently move mouse %s to lift off." % ("down" if mouse_flight.invert_y else "up")
 	elif model.status == "rollout":
 		instruction = "A smooth arrival. Hold CTRL to idle, then SPACE to stop on the runway."
 	elif not model.grounded and model.velocity.length() < 27.0:
@@ -95,6 +104,8 @@ func _draw() -> void:
 		instruction = "CTRL toward idle · 110–150 km/h · S to flare · SPACE after touchdown"
 	elif gate_count == gate_total:
 		instruction = "Land in either runway direction: 110–150 km/h, wings level, descend gently."
+	if model.status == "flying" and not paused and mouse_flight != null and mouse_flight.enabled and not mouse_captured:
+		instruction = "CLICK TO CAPTURE MOUSE  ·  Keyboard controls still available  ·  ESC settings"
 	if not instruction.is_empty():
 		_panel(Rect2(s.x / 2 - 335, s.y - 128, 670, 45), Color(0.035, 0.11, 0.15, 0.74), 22)
 		_center(Vector2(s.x / 2, s.y - 99), instruction, 15, accent)
@@ -118,29 +129,56 @@ func _draw() -> void:
 		_center(Vector2(s.x / 2, 138), "A LITTLE AIRPLANE. A WHOLE COAST TO EXPLORE.", 16, accent)
 		_center(Vector2(s.x / 2, 168), "Fly the five coastal beacons, or simply make your own route.", 16)
 		_center(Vector2(s.x / 2, 197), "Come home, touch down gently, and stop to complete your flight.", 14, quiet)
-		_center(Vector2(s.x / 2, 218), "No timer. No combat. Just flying.   ·   H to hide help", 12, quiet)
+		_center(Vector2(s.x / 2, 218), "Mouse pitch / roll  ·  Q/E rudder  ·  ESC mouse settings  ·  H hides help", 12, quiet)
 	elif show_help and model.status == "flying":
 		_panel(Rect2(40, 104, 365, 118), Color(0.035, 0.11, 0.15, 0.7))
 		_text(Vector2(59, 135), "FLIGHT NOTES", 13, accent)
-		_text(Vector2(59, 162), "Small inputs. Bank to turn; release to level.", 14)
-		_text(Vector2(59, 186), "Idle still glides — keep your speed up.", 14)
+		_text(Vector2(59, 162), "Mouse pitch / roll. Stop moving to neutral.", 14)
+		_text(Vector2(59, 186), "W/S + A/D remain available for longer inputs.", 14)
 		_text(Vector2(59, 208), "L: landing practice   R: restart   M: mute", 13, quiet)
 	if paused or model.status == "crashed" or model.status == "success":
 		draw_rect(Rect2(Vector2.ZERO, s), Color(0.02, 0.07, 0.10, 0.45))
-		_panel(Rect2(s.x / 2 - 290, s.y / 2 - 115, 580, 230), Color(0.035, 0.11, 0.15, 0.96), 18)
-		var title: String = "FLIGHT PAUSED"
-		var body: String = "Take a breath. The coast can wait."
-		var action: String = "ESC  RESUME    ·    R  RESTART    ·    L  LANDING PRACTICE"
-		if model.status == "crashed":
-			title = "LET’S TRY THAT AGAIN"
-			body = model.crash_reason
-			action = "R  NEW DEPARTURE    ·    L  LANDING PRACTICE"
-		elif model.status == "success":
-			title = "WELCOME HOME, PILOT"
-			body = "Safe landing · %d / %d beacons · %.1f km flown" % [gate_count, gate_total, model.distance_flown / 1000.0]
-			action = "R  FLY AGAIN    ·    L  PRACTISE ANOTHER LANDING"
-		_center(Vector2(s.x / 2, s.y / 2 - 57), title, 27, accent)
-		_center(Vector2(s.x / 2, s.y / 2 - 11), body, 17)
-		if model.status == "success":
-			_center(Vector2(s.x / 2, s.y / 2 + 23), "Touchdown descent  %.1f m/s" % model.touchdown_sink, 14, quiet)
-		_center(Vector2(s.x / 2, s.y / 2 + 72), action, 13, quiet)
+		if paused and model.status != "crashed" and model.status != "success":
+			_draw_pause_settings(s)
+		else:
+			_panel(Rect2(s.x / 2 - 290, s.y / 2 - 115, 580, 230), Color(0.035, 0.11, 0.15, 0.96), 18)
+			var title: String = "LET’S TRY THAT AGAIN" if model.status == "crashed" else "WELCOME HOME, PILOT"
+			var body: String = model.crash_reason if model.status == "crashed" else "Safe landing · %d / %d beacons · %.1f km flown" % [gate_count, gate_total, model.distance_flown / 1000.0]
+			_center(Vector2(s.x / 2, s.y / 2 - 57), title, 27, accent)
+			_center(Vector2(s.x / 2, s.y / 2 - 11), body, 17)
+			if model.status == "success":
+				_center(Vector2(s.x / 2, s.y / 2 + 23), "Touchdown descent  %.1f m/s" % model.touchdown_sink, 14, quiet)
+			_center(Vector2(s.x / 2, s.y / 2 + 72), "R  NEW DEPARTURE    ·    L  LANDING PRACTICE", 13, quiet)
+
+func _draw_pause_settings(s: Vector2) -> void:
+	var center: Vector2 = s * 0.5
+	_panel(Rect2(center - Vector2(290, 175), Vector2(580, 350)), Color(0.035, 0.11, 0.15, 0.96), 18)
+	_center(center + Vector2(0, -126), "FLIGHT PAUSED", 27, accent)
+	_center(center + Vector2(0, -92), "Mouse released · settings never steer the aircraft", 14, quiet)
+	if mouse_flight != null:
+		_panel(Rect2(center + Vector2(-245, -55), Vector2(232, 40)), Color("29434c"), 8)
+		_panel(Rect2(center + Vector2(13, -55), Vector2(232, 40)), Color("29434c"), 8)
+		_center(center + Vector2(-129, -29), "F2  MOUSE " + ("ON" if mouse_flight.enabled else "OFF"), 15)
+		_center(center + Vector2(129, -29), "I  " + ("PULL DOWN = UP" if mouse_flight.invert_y else "MOVE UP = UP"), 14)
+		_panel(Rect2(center + Vector2(-245, 5), Vector2(44, 40)), Color("29434c"), 8)
+		_panel(Rect2(center + Vector2(201, 5), Vector2(44, 40)), Color("29434c"), 8)
+		_center(center + Vector2(-223, 32), "−", 22)
+		_center(center + Vector2(223, 32), "+", 22)
+		_center(center + Vector2(0, 31), "SENSITIVITY  %.2f×" % mouse_flight.sensitivity, 17)
+		_center(center + Vector2(0, 70), "[ / ] adjust · I reverses mouse Y only · keyboard unchanged", 13, quiet)
+	_center(center + Vector2(0, 122), "ESC  RESUME & CAPTURE    ·    R  RESTART    ·    L  LANDING PRACTICE", 12, accent)
+
+func pause_mouse_option_at(point: Vector2) -> String:
+	if not paused or model == null or model.status == "crashed" or model.status == "success":
+		return ""
+	var scale_factor: float = minf(size.x / 1600.0, size.y / 900.0)
+	var local: Vector2 = point / scale_factor - size / scale_factor * 0.5
+	if Rect2(-245, -55, 232, 40).has_point(local):
+		return "toggle"
+	if Rect2(13, -55, 232, 40).has_point(local):
+		return "invert"
+	if Rect2(-245, 5, 44, 40).has_point(local):
+		return "less"
+	if Rect2(201, 5, 44, 40).has_point(local):
+		return "more"
+	return ""

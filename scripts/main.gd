@@ -3,6 +3,7 @@ extends Node3D
 const Flight = preload("res://scripts/flight_model.gd")
 const World = preload("res://scripts/coastal_world.gd")
 const AirplaneVisual = preload("res://scripts/plane_visual.gd")
+const MouseFlight = preload("res://scripts/mouse_flight_input.gd")
 const HUD = preload("res://scripts/flight_hud.gd")
 
 var model: FlightModel = Flight.new()
@@ -21,6 +22,11 @@ var engine_audio: AudioStreamPlayer
 var muted: bool = false
 var engine_volume: float = 0.0
 var landing_mode: bool = false
+var mouse_flight: MouseFlightInput = MouseFlight.new()
+var mouse_captured: bool = false
+var window_focused: bool = true
+var capture_guard: float = 0.0
+const FLIGHT_ACTIONS: Array[String] = ["pitch_up", "pitch_down", "bank_left", "bank_right", "yaw_left", "yaw_right", "throttle_up", "throttle_down", "brake"]
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
@@ -39,6 +45,7 @@ func _ready() -> void:
 	add_child(layer)
 	hud = HUD.new()
 	hud.model = model
+	hud.mouse_flight = mouse_flight
 	layer.add_child(hud)
 	_make_gates()
 	_make_audio()
@@ -144,6 +151,8 @@ func _make_audio() -> void:
 	engine_audio.play()
 
 func _process(dt: float) -> void:
+	capture_guard = maxf(capture_guard - dt, 0.0)
+	hud.mouse_captured = mouse_captured
 	_update_camera(dt)
 	_update_audio(dt)
 	if gate_index < gate_points.size() and not landing_mode:
@@ -166,8 +175,12 @@ func _process(dt: float) -> void:
 func _physics_process(dt: float) -> void:
 	if paused:
 		return
-	var elevator: float = Input.get_axis("pitch_down", "pitch_up")
-	var aileron: float = Input.get_axis("bank_left", "bank_right")
+	var mouse_command: Vector2 = mouse_flight.sample(dt) if mouse_captured else Vector2.ZERO
+	# Keyboard retains authority on its own axis, so it never fights a mouse tail.
+	var keyboard_pitch: float = Input.get_axis("pitch_down", "pitch_up")
+	var keyboard_roll: float = Input.get_axis("bank_left", "bank_right")
+	var elevator: float = keyboard_pitch if keyboard_pitch != 0.0 else mouse_command.y
+	var aileron: float = keyboard_roll if keyboard_roll != 0.0 else mouse_command.x
 	var rudder: float = Input.get_axis("yaw_left", "yaw_right")
 	if model.status != "crashed" and model.status != "success":
 		model.throttle = clampf(model.throttle + Input.get_axis("throttle_down", "throttle_up") * dt * 0.42, 0.0, 1.0)
@@ -187,6 +200,8 @@ func _physics_process(dt: float) -> void:
 	plane.basis = model.attitude()
 	plane.update_controls(dt, model.throttle, elevator, aileron, rudder, model.velocity.length())
 	plane.set_crashed(model.status == "crashed")
+	if model.status == "crashed" or model.status == "success":
+		_release_mouse()
 	if gate_index < gate_points.size() and not landing_mode and model.status == "flying":
 		# A swept proximity test means a low frame rate cannot skip a beacon.
 		var closest: Vector3 = Geometry3D.get_closest_point_to_segment(gate_points[gate_index], previous_position, model.position)
@@ -224,8 +239,16 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_L:
 			landing_practice()
 		KEY_ESCAPE:
-			paused = not paused
-			hud.paused = paused
+			if model.status != "crashed" and model.status != "success":
+				_set_paused(not paused)
+		KEY_F2:
+			_change_mouse_option("toggle")
+		KEY_I:
+			_change_mouse_option("invert")
+		KEY_BRACKETLEFT:
+			_change_mouse_option("less")
+		KEY_BRACKETRIGHT:
+			_change_mouse_option("more")
 		KEY_H:
 			hud.show_help = not hud.show_help
 		KEY_C:
@@ -237,6 +260,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 func reset_flight() -> void:
+	var restore_capture: bool = mouse_captured and model.status != "crashed" and model.status != "success"
+	_release_mouse()
+	_clear_flight_inputs()
 	model.reset()
 	landing_mode = false
 	hud.landing_mode = false
@@ -249,6 +275,8 @@ func reset_flight() -> void:
 	plane.basis = model.attitude()
 	plane.set_crashed(false)
 	_update_camera(1.0, true)
+	if restore_capture:
+		_capture_mouse()
 
 func landing_practice() -> void:
 	reset_flight()
@@ -268,6 +296,7 @@ func landing_practice() -> void:
 	_update_camera(1.0, true)
 
 func _exit_tree() -> void:
+	_release_mouse()
 	if is_instance_valid(engine_audio):
 		engine_audio.stop()
 		engine_audio.stream = null
@@ -275,8 +304,15 @@ func _exit_tree() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_quit_cleanly()
+	elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		window_focused = false
+		if hud != null:
+			_set_paused(true)
+	elif what == NOTIFICATION_WM_WINDOW_FOCUS_IN:
+		window_focused = true
 
 func _quit_cleanly() -> void:
+	_release_mouse()
 	paused = true
 	if is_instance_valid(engine_audio):
 		engine_audio.stop()
@@ -284,3 +320,59 @@ func _quit_cleanly() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	get_tree().quit()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		if mouse_captured and not paused and window_focused and capture_guard <= 0.0:
+			mouse_flight.feed_motion(event.screen_relative)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if paused:
+			var option: String = hud.pause_mouse_option_at(event.position)
+			if not option.is_empty():
+				_change_mouse_option(option)
+		elif not mouse_captured:
+			_capture_mouse()
+
+func _clear_flight_inputs() -> void:
+	mouse_flight.clear()
+	for action: String in FLIGHT_ACTIONS:
+		if InputMap.has_action(action):
+			Input.action_release(action)
+
+func _capture_mouse() -> void:
+	if not mouse_flight.enabled or paused or not window_focused or model.status == "crashed" or model.status == "success":
+		return
+	_clear_flight_inputs()
+	capture_guard = 0.08 # Ignore the platform's capture/warp transition, not player motion afterwards.
+	mouse_captured = true
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _release_mouse() -> void:
+	mouse_captured = false
+	capture_guard = 0.0
+	mouse_flight.clear()
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func _set_paused(value: bool) -> void:
+	paused = value
+	hud.paused = value
+	_release_mouse()
+	_clear_flight_inputs()
+	if not paused:
+		_capture_mouse()
+
+func _change_mouse_option(option: String) -> void:
+	match option:
+		"toggle":
+			mouse_flight.enabled = not mouse_flight.enabled
+			_release_mouse()
+			if not paused:
+				_capture_mouse()
+		"invert":
+			mouse_flight.set_inverted(not mouse_flight.invert_y)
+		"less":
+			mouse_flight.set_sensitivity(mouse_flight.sensitivity - 0.25)
+		"more":
+			mouse_flight.set_sensitivity(mouse_flight.sensitivity + 0.25)

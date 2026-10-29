@@ -19,3 +19,11 @@ Research date: 2026-10-29. These projects were inspected in separate research ch
 An original single-aircraft, fixed-step model avoids taking on a general-purpose simulation framework. The model retains independent world velocity, lift perpendicular to airflow, drag opposite airflow, gravity, thrust, speed-dependent control authority, post-critical-angle lift loss, ground friction and explicit landing outcomes. Keyboard aids trade realism for accessible takeoff and landing. Numerical parameters are game-tuned, not validated against a real aircraft.
 
 All visual geometry in `plane_visual.gd` and `coastal_world.gd`, interface drawing, and synthesized `propeller.wav` are original to this project. The built-in Godot fallback font is used; no font file is redistributed. No third-party attribution notice is required for copied code/assets because none are included. The references above are acknowledged as design research, not bundled dependencies.
+
+
+## Mouse-flight controls (2026-10-29)
+
+- [EA: Battlefield 2042 PC mouse/keyboard control bindings](https://www.ea.com/able/resources/battlefield-2042/pc/mouse-keyboard-edit-controls) separates pilot throttle, yaw, pitch and roll actions.
+- [EA: Battlefield 2042 PC mouse/keyboard settings](https://www.ea.com/able/resources/battlefield-2042/pc/mouse-and-keyboard) documents aircraft Y inversion and aircraft-control sensitivity; its documented aircraft-inversion default is enabled.
+
+Design choice for Coastline: relative mouse X controls roll, relative mouse Y controls pitch, with an inverted-aircraft default and a reversible setting. The existing keyboard yaw/throttle and backup pitch/roll remain intact rather than replacing them with an installment-specific full keymap. An original time-based motion filter supplies short-lived, bounded input; this does not reproduce proprietary Battlefield code, exact response curves, or point-to-fly assist. Settings are session-local. No EA code or assets are included.
