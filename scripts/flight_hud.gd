@@ -1,9 +1,13 @@
 class_name FlightHUD
 extends Control
 
-var model: FlightModel
+const MouseFlightInputScript = preload("res://games/minigame/godot_party_default_flight/scripts/mouse_flight_input.gd")
+
+const FlightModelScript = preload("res://games/minigame/godot_party_default_flight/scripts/flight_model.gd")
+
+var model: FlightModelScript
 var paused: bool = false
-var mouse_flight: MouseFlightInput
+var mouse_flight: MouseFlightInputScript
 var mouse_captured: bool = false
 var show_help: bool = true
 var gate_count: int = 0
@@ -72,7 +76,7 @@ func _draw() -> void:
 	_text(Vector2(137, s.y - 72), "km/h", 12, quiet)
 	draw_line(Vector2(185, s.y - 120), Vector2(185, s.y - 67), Color(0.5, 0.7, 0.7, 0.25), 1)
 	_text(Vector2(207, s.y - 114), "ALTITUDE / FIELD", 12, quiet)
-	_text(Vector2(207, s.y - 70), "%04d" % maxi(int(model.position.y - FlightModel.GEAR_HEIGHT), 0), 36)
+	_text(Vector2(207, s.y - 70), "%04d" % maxi(int(model.position.y - FlightModelScript.GEAR_HEIGHT), 0), 36)
 	_text(Vector2(308, s.y - 72), "m", 12, quiet)
 	var throttle_x: float = s.x - 230
 	_panel(Rect2(throttle_x, s.y - 142, 190, 92))

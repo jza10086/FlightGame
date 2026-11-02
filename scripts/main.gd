@@ -1,15 +1,17 @@
 extends Node3D
 
-const Flight = preload("res://scripts/flight_model.gd")
-const World = preload("res://scripts/coastal_world.gd")
-const AirplaneVisual = preload("res://scripts/plane_visual.gd")
-const MouseFlight = preload("res://scripts/mouse_flight_input.gd")
-const HUD = preload("res://scripts/flight_hud.gd")
+signal completed(metrics: Dictionary)
 
-var model: FlightModel = Flight.new()
+const Flight = preload("res://games/minigame/godot_party_default_flight/scripts/flight_model.gd")
+const World = preload("res://games/minigame/godot_party_default_flight/scripts/coastal_world.gd")
+const AirplaneVisual = preload("res://games/minigame/godot_party_default_flight/scripts/plane_visual.gd")
+const MouseFlight = preload("res://games/minigame/godot_party_default_flight/scripts/mouse_flight_input.gd")
+const HUD = preload("res://games/minigame/godot_party_default_flight/scripts/flight_hud.gd")
+
+var model: Flight = Flight.new()
 var plane: Node3D
 var camera: Camera3D
-var hud: FlightHUD
+var hud: HUD
 var world: Node3D
 var paused: bool = false
 var wide_camera: bool = false
@@ -22,14 +24,13 @@ var engine_audio: AudioStreamPlayer
 var muted: bool = false
 var engine_volume: float = 0.0
 var landing_mode: bool = false
-var mouse_flight: MouseFlightInput = MouseFlight.new()
+var mouse_flight: MouseFlight = MouseFlight.new()
 var mouse_captured: bool = false
 var window_focused: bool = true
 var capture_guard: float = 0.0
-const FLIGHT_ACTIONS: Array[String] = ["pitch_up", "pitch_down", "bank_left", "bank_right", "yaw_left", "yaw_right", "throttle_up", "throttle_down", "brake"]
+const FLIGHT_ACTIONS: Array[String] = ["flight_pitch_up", "flight_pitch_down", "flight_bank_left", "flight_bank_right", "flight_yaw_left", "flight_yaw_right", "flight_throttle_up", "flight_throttle_down", "flight_brake"]
 
 func _ready() -> void:
-	get_tree().auto_accept_quit = false
 	_bind_inputs()
 	_make_sky()
 	world = World.new()
@@ -53,10 +54,10 @@ func _ready() -> void:
 
 func _bind_inputs() -> void:
 	var bindings: Dictionary = {
-		"pitch_up": [KEY_S, KEY_DOWN], "pitch_down": [KEY_W, KEY_UP],
-		"bank_left": [KEY_A, KEY_LEFT], "bank_right": [KEY_D, KEY_RIGHT],
-		"yaw_left": [KEY_Q], "yaw_right": [KEY_E],
-		"throttle_up": [KEY_SHIFT], "throttle_down": [KEY_CTRL], "brake": [KEY_SPACE]
+		"flight_pitch_up": [KEY_S, KEY_DOWN], "flight_pitch_down": [KEY_W, KEY_UP],
+		"flight_bank_left": [KEY_A, KEY_LEFT], "flight_bank_right": [KEY_D, KEY_RIGHT],
+		"flight_yaw_left": [KEY_Q], "flight_yaw_right": [KEY_E],
+		"flight_throttle_up": [KEY_SHIFT], "flight_throttle_down": [KEY_CTRL], "flight_brake": [KEY_SPACE]
 	}
 	for action: String in bindings:
 		if not InputMap.has_action(action):
@@ -141,7 +142,7 @@ func _make_audio() -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	engine_audio = AudioStreamPlayer.new()
-	var stream: AudioStreamWAV = load("res://assets/propeller.wav")
+	var stream: AudioStreamWAV = load("res://games/minigame/godot_party_default_flight/assets/propeller.wav")
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0
 	stream.loop_end = 22050
@@ -177,16 +178,16 @@ func _physics_process(dt: float) -> void:
 		return
 	var mouse_command: Vector2 = mouse_flight.sample(dt) if mouse_captured else Vector2.ZERO
 	# Keyboard retains authority on its own axis, so it never fights a mouse tail.
-	var keyboard_pitch: float = Input.get_axis("pitch_down", "pitch_up")
-	var keyboard_roll: float = Input.get_axis("bank_left", "bank_right")
+	var keyboard_pitch: float = Input.get_axis("flight_pitch_down", "flight_pitch_up")
+	var keyboard_roll: float = Input.get_axis("flight_bank_left", "flight_bank_right")
 	var elevator: float = keyboard_pitch if keyboard_pitch != 0.0 else mouse_command.y
 	var aileron: float = keyboard_roll if keyboard_roll != 0.0 else mouse_command.x
-	var rudder: float = Input.get_axis("yaw_left", "yaw_right")
+	var rudder: float = Input.get_axis("flight_yaw_left", "flight_yaw_right")
 	if model.status != "crashed" and model.status != "success":
-		model.throttle = clampf(model.throttle + Input.get_axis("throttle_down", "throttle_up") * dt * 0.42, 0.0, 1.0)
+		model.throttle = clampf(model.throttle + Input.get_axis("flight_throttle_down", "flight_throttle_up") * dt * 0.42, 0.0, 1.0)
 	var starting: bool = model.status == "ready"
 	previous_position = model.position
-	model.step(dt, elevator, aileron, rudder, Input.is_action_pressed("brake"),
+	model.step(dt, elevator, aileron, rudder, Input.is_action_pressed("flight_brake"),
 		World.terrain_height(model.position.x, model.position.z), World.is_runway(model.position))
 	if starting and model.status == "takeoff":
 		hud.show_help = false
@@ -202,6 +203,8 @@ func _physics_process(dt: float) -> void:
 	plane.set_crashed(model.status == "crashed")
 	if model.status == "crashed" or model.status == "success":
 		_release_mouse()
+		completed.emit({"outcome": "安全着陆" if model.status == "success" else "坠机", "gates": gate_index})
+		return
 	if gate_index < gate_points.size() and not landing_mode and model.status == "flying":
 		# A swept proximity test means a low frame rate cannot skip a beacon.
 		var closest: Vector3 = Geometry3D.get_closest_point_to_segment(gate_points[gate_index], previous_position, model.position)
@@ -255,9 +258,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			wide_camera = not wide_camera
 		KEY_M:
 			muted = not muted
-		KEY_F11:
-			var full: bool = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
-			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 func reset_flight() -> void:
 	var restore_capture: bool = mouse_captured and model.status != "crashed" and model.status != "success"
@@ -296,30 +296,20 @@ func landing_practice() -> void:
 	_update_camera(1.0, true)
 
 func _exit_tree() -> void:
+	for action: String in ["flight_pitch_up", "flight_pitch_down", "flight_bank_left", "flight_bank_right", "flight_yaw_left", "flight_yaw_right", "flight_throttle_up", "flight_throttle_down", "flight_brake"]:
+		InputMap.erase_action(action)
 	_release_mouse()
 	if is_instance_valid(engine_audio):
 		engine_audio.stop()
 		engine_audio.stream = null
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		_quit_cleanly()
-	elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		window_focused = false
 		if hud != null:
 			_set_paused(true)
 	elif what == NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		window_focused = true
-
-func _quit_cleanly() -> void:
-	_release_mouse()
-	paused = true
-	if is_instance_valid(engine_audio):
-		engine_audio.stop()
-		engine_audio.stream = null
-	await get_tree().process_frame
-	await get_tree().process_frame
-	get_tree().quit()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
