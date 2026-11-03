@@ -1,0 +1,11 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "COASTLINE · 海岸飞行"
+msgstr "COASTLINE · 海岸飞行"
+
+msgid "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。"
+msgstr "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。"
