@@ -1,0 +1,644 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://games/minigame/godot_party_default_flight/scripts/flight_hud.gd" id="script"]
+
+[sub_resource type="StyleBoxFlat" id="Frame"]
+bg_color = Color(0.035,0.11,0.15,0.84)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+
+[node name="Instruments" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("script")
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 48
+offset_right = 398
+offset_top = 28
+offset_bottom = 66
+mouse_filter = 2
+text = "C O A S T L I N E"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 30
+
+
+[node name="Club" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 50
+offset_right = 390
+offset_top = 65
+offset_bottom = 93
+mouse_filter = 2
+text = "ISLAND FLIGHT CLUB  /  TERN 01"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+
+[node name="Heading" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 1
+anchor_right = 1
+anchor_top = 0
+anchor_bottom = 0
+offset_left = -300
+offset_right = -55
+offset_top = 27
+offset_bottom = 65
+mouse_filter = 2
+text = "180°  /  HDG"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 23
+
+
+[node name="Clock" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 1
+anchor_right = 1
+anchor_top = 0
+anchor_bottom = 0
+offset_left = -300
+offset_right = -55
+offset_top = 68
+offset_bottom = 95
+mouse_filter = 2
+text = "01:30  FLIGHT TIME"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+
+[node name="PhasePanel" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0
+anchor_bottom = 0
+offset_left = -298
+offset_right = 298
+offset_top = 30
+offset_bottom = 86
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+
+[node name="Banner" type="Label" parent="PhasePanel"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 8
+offset_right = 588
+offset_top = 0
+offset_bottom = 56
+mouse_filter = 2
+text = "COASTAL CIRCUIT  ·  2 / 5 BEACONS"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 19
+
+
+[node name="Readouts" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 1
+anchor_bottom = 1
+offset_left = 44
+offset_right = 524
+offset_top = -178
+offset_bottom = -62
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+
+[node name="SpeedTitle" type="Label" parent="Readouts"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 18
+offset_right = 163
+offset_top = 7
+offset_bottom = 35
+mouse_filter = 2
+text = "AIRSPEED"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+
+[node name="Speed" type="Label" parent="Readouts"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 18
+offset_right = 210
+offset_top = 34
+offset_bottom = 103
+mouse_filter = 2
+text = "125 km/h"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 36
+
+
+[node name="AltitudeTitle" type="Label" parent="Readouts"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 226
+offset_right = 466
+offset_top = 7
+offset_bottom = 35
+mouse_filter = 2
+text = "ALTITUDE / FIELD"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+
+[node name="Altitude" type="Label" parent="Readouts"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 226
+offset_right = 471
+offset_top = 34
+offset_bottom = 103
+mouse_filter = 2
+text = "0235 m"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 36
+
+
+[node name="Power" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 1
+anchor_right = 1
+anchor_top = 1
+anchor_bottom = 1
+offset_left = -284
+offset_right = -48
+offset_top = -178
+offset_bottom = -62
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+
+[node name="Throttle" type="Label" parent="Power"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 18
+offset_right = 222
+offset_top = 8
+offset_bottom = 40
+mouse_filter = 2
+text = "THROTTLE   65%"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 21
+
+
+[node name="ThrottleBar" type="ProgressBar" parent="Power"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 19
+offset_right = 215
+offset_top = 52
+offset_bottom = 64
+mouse_filter = 2
+show_percentage = false
+value = 65.0
+
+[node name="PowerKeys" type="Label" parent="Power"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 18
+offset_right = 218
+offset_top = 73
+offset_bottom = 99
+mouse_filter = 2
+text = "SHIFT +     CTRL −"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 15
+
+
+[node name="Keys" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1
+anchor_bottom = 1
+offset_left = -720
+offset_right = 720
+offset_top = -56
+offset_bottom = -16
+mouse_filter = 2
+text = "MOUSE  PITCH / ROLL    Q/E  RUDDER    SPACE  BRAKE    C  CAMERA    H  HELP    ESC  SETTINGS"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+
+
+[node name="Prompt" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1
+anchor_bottom = 1
+offset_left = -410
+offset_right = 410
+offset_top = -165
+offset_bottom = -99
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+visible = false
+
+[node name="Instruction" type="Label" parent="Prompt"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 12
+offset_right = 808
+offset_top = 0
+offset_bottom = 66
+mouse_filter = 2
+text = "Hold SHIFT for power."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+
+
+[node name="Navigation" type="Label" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0
+anchor_bottom = 0
+offset_left = -350
+offset_right = 350
+offset_top = 90
+offset_bottom = 134
+mouse_filter = 2
+text = "BEACON 02  ·  AHEAD  ·  420 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 17
+
+
+[node name="Help" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0
+anchor_bottom = 0
+offset_left = -355
+offset_right = 355
+offset_top = 150
+offset_bottom = 307
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+visible = false
+
+[node name="HelpText" type="Label" parent="Help"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 18
+offset_right = 692
+offset_top = 6
+offset_bottom = 151
+mouse_filter = 2
+text = "A LITTLE AIRPLANE. A WHOLE COAST TO EXPLORE.\nFly the five coastal beacons, or simply make your own route.\nCome home, touch down gently, and stop to complete your flight.\nMouse pitch / roll · Q/E rudder · ESC mouse settings · H hides help"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 19
+
+
+[node name="Notes" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 45
+offset_right = 535
+offset_top = 130
+offset_bottom = 270
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+visible = false
+
+[node name="NotesText" type="Label" parent="Notes"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 15
+offset_right = 473
+offset_top = 4
+offset_bottom = 137
+mouse_filter = 2
+text = "FLIGHT NOTES\nMouse pitch / roll. Stop moving to neutral.\nW/S + A/D remain available for longer inputs.\nL: landing practice   R: restart   M: mute"
+horizontal_alignment = 0
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+
+[node name="Menu" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -370
+offset_right = 370
+offset_top = -210
+offset_bottom = 210
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+visible = false
+
+[node name="PauseTitle" type="Label" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 14
+offset_right = 726
+offset_top = 17
+offset_bottom = 71
+mouse_filter = 2
+text = "FLIGHT PAUSED"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 32
+
+
+[node name="PauseHint" type="Label" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 15
+offset_right = 725
+offset_top = 74
+offset_bottom = 116
+mouse_filter = 2
+text = "Mouse released · settings never steer the aircraft"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 19
+
+
+[node name="Toggle" type="Button" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 53
+offset_right = 353
+offset_top = 142
+offset_bottom = 194
+mouse_filter = 2
+text = "F2  MOUSE ON"
+focus_mode = 0
+
+[node name="Invert" type="Button" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 387
+offset_right = 687
+offset_top = 142
+offset_bottom = 194
+mouse_filter = 2
+text = "I  PULL DOWN = UP"
+focus_mode = 0
+
+[node name="Less" type="Button" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 53
+offset_right = 119
+offset_top = 215
+offset_bottom = 267
+mouse_filter = 2
+text = "−"
+focus_mode = 0
+
+[node name="More" type="Button" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 621
+offset_right = 687
+offset_top = 215
+offset_bottom = 267
+mouse_filter = 2
+text = "+"
+focus_mode = 0
+
+[node name="Sensitivity" type="Label" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 119
+offset_right = 621
+offset_top = 215
+offset_bottom = 267
+mouse_filter = 2
+text = "SENSITIVITY  1.00×"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+
+
+[node name="SettingHint" type="Label" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 12
+offset_right = 728
+offset_top = 276
+offset_bottom = 318
+mouse_filter = 2
+text = "[ / ] adjust · I reverses mouse Y only · keyboard unchanged"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 17
+
+
+[node name="ResumeHint" type="Label" parent="Menu"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 12
+offset_right = 728
+offset_top = 335
+offset_bottom = 390
+mouse_filter = 2
+text = "ESC RESUME & CAPTURE  ·  R RESTART  ·  L LANDING PRACTICE"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 17
+
+
+[node name="Result" type="Panel" parent="."]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -365
+offset_right = 365
+offset_top = -150
+offset_bottom = 150
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Frame")
+visible = false
+
+[node name="ResultTitle" type="Label" parent="Result"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 16
+offset_right = 714
+offset_top = 18
+offset_bottom = 75
+mouse_filter = 2
+text = "WELCOME HOME, PILOT"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 31
+
+
+[node name="ResultText" type="Label" parent="Result"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 16
+offset_right = 714
+offset_top = 89
+offset_bottom = 146
+mouse_filter = 2
+text = "Safe landing · 5 / 5 beacons · 12.5 km flown"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 22
+
+
+[node name="Sink" type="Label" parent="Result"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 16
+offset_right = 714
+offset_top = 153
+offset_bottom = 210
+mouse_filter = 2
+text = "Touchdown descent  1.5 m/s"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 18
+
+
+[node name="Again" type="Label" parent="Result"]
+unique_name_in_owner = true
+anchor_left = 0
+anchor_right = 0
+anchor_top = 0
+anchor_bottom = 0
+offset_left = 16
+offset_right = 714
+offset_top = 217
+offset_bottom = 274
+mouse_filter = 2
+text = "R  NEW DEPARTURE    ·    L  LANDING PRACTICE"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 17

@@ -1,6 +1,161 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://games/minigame/godot_party_default_flight/scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/airfield.tscn" id="airfield"]
+[ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/airplane.tscn" id="plane"]
+[ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/instruments.tscn" id="hud"]
 
-[node name="Coastline" type="Node3D"]
-script = ExtResource("1")
+[ext_resource type="Script" path="res://games/minigame/godot_party_default_flight/scripts/main.gd" id="1_qxcme"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sh7xr"]
+sky_top_color = Color(0.29411766, 0.5803922, 0.69411767, 1)
+sky_horizon_color = Color(0.7176471, 0.84313726, 0.8117647, 1)
+sky_curve = 0.3
+ground_bottom_color = Color(0.15686275, 0.4627451, 0.5176471, 1)
+ground_horizon_color = Color(0.7176471, 0.84313726, 0.8117647, 1)
+sun_angle_max = 8.0
+
+[sub_resource type="Sky" id="Sky_jlfpa"]
+sky_material = SubResource("ProceduralSkyMaterial_sh7xr")
+
+[sub_resource type="Environment" id="Environment_5iqwl"]
+background_mode = 2
+sky = SubResource("Sky_jlfpa")
+ambient_light_source = 2
+ambient_light_color = Color(0.70980394, 0.8392157, 0.8745098, 1)
+ambient_light_energy = 0.4
+fog_enabled = true
+fog_light_color = Color(0.60784316, 0.7764706, 0.78431374, 1)
+fog_light_energy = 0.7
+fog_density = 8e-05
+fog_sky_affect = 0.15
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_060lf"]
+shading_mode = 0
+albedo_color = Color(1, 0.75686276, 0.42352942, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_n8qrt"]
+material = SubResource("StandardMaterial3D_060lf")
+inner_radius = 44.0
+outer_radius = 47.0
+rings = 48
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5v56m"]
+shading_mode = 0
+albedo_color = Color(0.5529412, 0.7372549, 0.7058824, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_qugey"]
+material = SubResource("StandardMaterial3D_5v56m")
+inner_radius = 44.0
+outer_radius = 47.0
+rings = 48
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_06qn2"]
+shading_mode = 0
+albedo_color = Color(0.5529412, 0.7372549, 0.7058824, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_sg2ot"]
+material = SubResource("StandardMaterial3D_06qn2")
+inner_radius = 44.0
+outer_radius = 47.0
+rings = 48
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wctw1"]
+shading_mode = 0
+albedo_color = Color(0.5529412, 0.7372549, 0.7058824, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_7l7q1"]
+material = SubResource("StandardMaterial3D_wctw1")
+inner_radius = 44.0
+outer_radius = 47.0
+rings = 48
+ring_segments = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xftrc"]
+shading_mode = 0
+albedo_color = Color(0.5529412, 0.7372549, 0.7058824, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_h3b3u"]
+material = SubResource("StandardMaterial3D_xftrc")
+inner_radius = 44.0
+outer_radius = 47.0
+rings = 48
+ring_segments = 6
+
+[node name="Coastline" type="Node3D" unique_id=1395477749]
+script = ExtResource("1_qxcme")
+
+[node name="WorldEnvironment1" type="WorldEnvironment" parent="." unique_id=1284485831]
+environment = SubResource("Environment_5iqwl")
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=1235565257]
+transform = Transform3D(0.81915206, 0.3371398, -0.4640331, 0, 0.809017, 0.58778524, 0.57357645, -0.4814855, 0.6627079, 0, 0, 0)
+light_color = Color(1, 0.8745098, 0.6745098, 1)
+light_energy = 0.85
+shadow_enabled = true
+shadow_bias = 0.08
+shadow_normal_bias = 1.2
+directional_shadow_mode = 1
+directional_shadow_max_distance = 160.0
+
+[node name="BeaconRoute" type="Node3D" parent="." unique_id=158738805]
+
+[node name="Beacon1" type="Node3D" parent="BeaconRoute" unique_id=1512809261]
+transform = Transform3D(1, 0, 0, 0, 0.9950375, -0.09950069, 0, 0.09950069, 0.9950375, 0, 95, -950)
+
+[node name="MeshInstance3D1" type="MeshInstance3D" parent="BeaconRoute/Beacon1" unique_id=1901480159]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_n8qrt")
+
+[node name="Beacon2" type="Node3D" parent="BeaconRoute" unique_id=1266966859]
+transform = Transform3D(0.8633038, -0.0334432, -0.5035754, 0, 0.997802, -0.06626554, 0.5046847, 0.05720729, 0.86140627, 380, 145, -1600)
+
+[node name="MeshInstance3D1" type="MeshInstance3D" parent="BeaconRoute/Beacon2" unique_id=526478505]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_qugey")
+
+[node name="Beacon3" type="Node3D" parent="BeaconRoute" unique_id=1665241148]
+transform = Transform3D(0.14143845, -0.034982286, -0.9893288, 0, 0.99937546, -0.03533753, 0.9899471, 0.0049980856, 0.14135012, 1080, 170, -1700)
+
+[node name="MeshInstance3D1" type="MeshInstance3D" parent="BeaconRoute/Beacon3" unique_id=283478039]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_sg2ot")
+
+[node name="Beacon4" type="Node3D" parent="BeaconRoute" unique_id=1708943297]
+transform = Transform3D(-0.96041423, 0.012029372, -0.27831593, 0, 0.99906725, 0.043181688, 0.27857578, 0.04147231, -0.9595184, 1370, 125, -700)
+
+[node name="MeshInstance3D1" type="MeshInstance3D" parent="BeaconRoute/Beacon4" unique_id=1524633676]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_7l7q1")
+
+[node name="Beacon5" type="Node3D" parent="BeaconRoute" unique_id=1341905629]
+transform = Transform3D(-0.8448165, -0.012552547, 0.53490883, 0, 0.99972475, 0.023460245, -0.5350561, 0.019819602, -0.844584, 800, 100, 200)
+
+[node name="MeshInstance3D1" type="MeshInstance3D" parent="BeaconRoute/Beacon5" unique_id=1721701474]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_h3b3u")
+
+[node name="ChaseCamera" type="Camera3D" parent="." unique_id=1387788293]
+transform = Transform3D(1, 0, 0, 0, 0.955779, 0.29408586, 0, -0.29408586, 0.955779, 0, 5, 13)
+current = true
+fov = 62.0
+near = 0.15
+far = 12000.0
+
+[node name="Airfield" parent="." instance=ExtResource("airfield")]
+
+
+[node name="Airplane" parent="." instance=ExtResource("plane")]
+position = Vector3(0,1,0)
+
+[node name="GameHUD" type="CanvasLayer" parent="."]
+layer = -2
+
+[node name="Instruments" parent="GameHUD" instance=ExtResource("hud")]

@@ -9,3 +9,30 @@ msgstr "COASTLINE · 海岸飞行"
 
 msgid "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。"
 msgstr "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。"
+
+msgid "hud.circuit"
+msgstr "COASTAL CIRCUIT  ·  {current} / {total} BEACONS"
+
+msgid "hud.heading"
+msgstr "{degrees}°  /  HDG"
+
+msgid "hud.clock"
+msgstr "{time}  FLIGHT TIME"
+
+msgid "hud.speed"
+msgstr "{speed} km/h"
+
+msgid "hud.altitude"
+msgstr "{height} m"
+
+msgid "hud.throttle"
+msgstr "THROTTLE   {percent}%"
+
+msgid "hud.sensitivity"
+msgstr "SENSITIVITY  {value}×"
+
+msgid "hud.landing"
+msgstr "Safe landing · {current} / {total} beacons · {distance} km flown"
+
+msgid "hud.sink"
+msgstr "Touchdown descent  {speed} m/s"

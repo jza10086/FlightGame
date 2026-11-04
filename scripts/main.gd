@@ -1,10 +1,10 @@
 extends Node3D
+const SoloRound = preload("res://games/protocols/godot_party_default_protocol/solo_round.gd")
 
 signal completed(metrics: Dictionary)
 
 const Flight = preload("res://games/minigame/godot_party_default_flight/scripts/flight_model.gd")
 const World = preload("res://games/minigame/godot_party_default_flight/scripts/coastal_world.gd")
-const AirplaneVisual = preload("res://games/minigame/godot_party_default_flight/scripts/plane_visual.gd")
 const MouseFlight = preload("res://games/minigame/godot_party_default_flight/scripts/mouse_flight_input.gd")
 const HUD = preload("res://games/minigame/godot_party_default_flight/scripts/flight_hud.gd")
 
@@ -12,13 +12,12 @@ var model: Flight = Flight.new()
 var plane: Node3D
 var camera: Camera3D
 var hud: HUD
-var world: Node3D
 var paused: bool = false
 var wide_camera: bool = false
 var camera_heading: float = 0.0
 var gates: Array[Node3D] = []
 var gate_index: int = 0
-var gate_points: Array[Vector3] = [Vector3(0, 95, -950), Vector3(380, 145, -1600), Vector3(1080, 170, -1700), Vector3(1370, 125, -700), Vector3(800, 100, 200)]
+var gate_points: Array[Vector3] = []
 var previous_position := Vector3.ZERO
 var engine_audio: AudioStreamPlayer
 var muted: bool = false
@@ -32,23 +31,17 @@ const FLIGHT_ACTIONS: Array[String] = ["flight_pitch_up", "flight_pitch_down", "
 
 func _ready() -> void:
 	_bind_inputs()
-	_make_sky()
-	world = World.new()
-	add_child(world)
-	plane = AirplaneVisual.new()
-	add_child(plane)
-	camera = Camera3D.new()
-	camera.fov = 62.0
-	camera.near = 0.15
-	camera.far = 12000.0
-	add_child(camera)
-	var layer := CanvasLayer.new()
-	add_child(layer)
-	hud = HUD.new()
+	plane = $Airplane
+	camera = $ChaseCamera
+	hud = $GameHUD/Instruments
+	if get_parent() is SoloRound:
+		hud.i18n = get_parent().api.i18n
 	hud.model = model
 	hud.mouse_flight = mouse_flight
-	layer.add_child(hud)
-	_make_gates()
+	gates.assign($BeaconRoute.get_children())
+	for gate: Node3D in gates:
+		gate_points.append(gate.global_position)
+	hud.gate_total = gates.size()
 	_make_audio()
 	reset_flight()
 
@@ -66,70 +59,6 @@ func _bind_inputs() -> void:
 			var event := InputEventKey.new()
 			event.physical_keycode = key
 			InputMap.action_add_event(action, event)
-
-func _make_sky() -> void:
-	var environment := Environment.new()
-	environment.background_mode = Environment.BG_SKY
-	var sky := Sky.new()
-	var sky_material := ProceduralSkyMaterial.new()
-	sky_material.sky_top_color = Color("4b94b1")
-	sky_material.sky_horizon_color = Color("b7d7cf")
-	sky_material.ground_bottom_color = Color("287684")
-	sky_material.ground_horizon_color = Color("b7d7cf")
-	sky_material.sky_curve = 0.3
-	sky_material.sun_angle_max = 8.0
-	sky.sky_material = sky_material
-	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color("b5d6df")
-	environment.ambient_light_energy = 0.4
-	environment.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-	environment.tonemap_exposure = 1.0
-	environment.fog_enabled = true
-	environment.fog_light_color = Color("9bc6c8")
-	environment.fog_light_energy = 0.7
-	environment.fog_density = 0.00008
-	environment.fog_sky_affect = 0.15
-	var env_node := WorldEnvironment.new()
-	env_node.environment = environment
-	add_child(env_node)
-	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-36, -35, 0)
-	sun.light_color = Color("ffdfac")
-	sun.light_energy = 0.85
-	sun.shadow_enabled = true
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
-	sun.directional_shadow_max_distance = 160.0
-	sun.shadow_bias = 0.08
-	sun.shadow_normal_bias = 1.2
-	add_child(sun)
-
-func _make_gates() -> void:
-	for i: int in gate_points.size():
-		var gate := Node3D.new()
-		add_child(gate)
-		gate.position = gate_points[i]
-		var prior: Vector3 = gate_points[i - 1] if i > 0 else Vector3(0, 50, -500)
-		gate.look_at(gate.position + (gate.position - prior).normalized())
-		var torus := TorusMesh.new()
-		torus.inner_radius = 44.0
-		torus.outer_radius = 47.0
-		torus.rings = 48
-		torus.ring_segments = 6
-		var material := StandardMaterial3D.new()
-		material.albedo_color = Color("ffc16c")
-		material.emission_enabled = true
-		material.emission = Color("cb7e34")
-		material.emission_energy_multiplier = 0.25
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		torus.material = material
-		var mesh := MeshInstance3D.new()
-		mesh.mesh = torus
-		mesh.rotation.x = PI / 2
-		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		gate.add_child(mesh)
-		gates.append(gate)
-	_update_gates()
 
 func _update_gates() -> void:
 	for i: int in gates.size():

@@ -24,41 +24,23 @@ var quiet := Color("b5d3cf")
 var accent := Color("ffc377")
 var dark := Color(0.035, 0.11, 0.15, 0.84)
 
-func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+const DefaultText: Translation = preload("res://games/minigame/godot_party_default_flight/i18n/zh_Hans.po")
+var i18n: RefCounted
+
+func _text_value(key: StringName, values: Dictionary) -> String:
+	return DefaultText.get_message(key).format(values) if i18n == null else i18n.text(key, values)
 
 func _process(_delta: float) -> void:
-	queue_redraw()
-
-func _text(p: Vector2, value: String, size_px: int = 18, color: Color = ink) -> void:
-	draw_string(font, p, value, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px, color)
-
-func _center(p: Vector2, value: String, size_px: int = 18, color: Color = ink) -> void:
-	_text(p - Vector2(font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px).x * 0.5, 0), value, size_px, color)
-
-func _panel(rect: Rect2, color: Color = dark, radius: int = 14) -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.corner_radius_top_left = radius
-	style.corner_radius_top_right = radius
-	style.corner_radius_bottom_left = radius
-	style.corner_radius_bottom_right = radius
-	draw_style_box(style, rect)
-
-func _draw() -> void:
 	if model == null:
 		return
-	var s: Vector2 = size
-	var k: float = minf(s.x / 1600.0, s.y / 900.0)
-	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE * k)
-	s /= k
-	_text(Vector2(42, 54), "C O A S T L I N E", 26)
-	_text(Vector2(43, 79), "ISLAND FLIGHT CLUB  /  TERN 01", 12, quiet)
-	var heading_deg: int = int(fposmod(rad_to_deg(model.heading) * -1.0 + 180.0, 360.0))
-	_text(Vector2(s.x - 204, 50), "%03d°  /  HDG" % heading_deg, 20)
-	_text(Vector2(s.x - 204, 76), "%02d:%02d  FLIGHT TIME" % [int(model.flight_time) / 60, int(model.flight_time) % 60], 12, quiet)
-	var banner: String = "COASTAL CIRCUIT  ·  %d / %d BEACONS" % [gate_count, gate_total]
+	var heading: int = int(fposmod(rad_to_deg(model.heading) * -1.0 + 180.0, 360.0))
+	%Heading.text = _text_value(&"hud.heading", {"degrees": "%03d" % heading})
+	%Clock.text = _text_value(&"hud.clock", {"time": "%02d:%02d" % [int(model.flight_time) / 60, int(model.flight_time) % 60]})
+	%Speed.text = _text_value(&"hud.speed", {"speed": "%03d" % int(model.velocity.length() * 3.6)})
+	%Altitude.text = _text_value(&"hud.altitude", {"height": "%04d" % maxi(int(model.position.y - FlightModelScript.GEAR_HEIGHT), 0)})
+	%ThrottleBar.value = model.throttle * 100.0
+	%Throttle.text = _text_value(&"hud.throttle", {"percent": int(model.throttle * 100)})
+	var banner: String = _text_value(&"hud.circuit", {"current": gate_count, "total": gate_total})
 	if model.status == "ready" or model.status == "takeoff":
 		banner = "RUNWAY 18  ·  READY FOR DEPARTURE"
 	elif model.status == "rollout":
@@ -67,29 +49,11 @@ func _draw() -> void:
 		banner = "FINAL APPROACH  ·  LANDING PRACTICE"
 	elif gate_count == gate_total:
 		banner = "CIRCUIT COMPLETE  ·  RETURN TO THE AIRSTRIP"
-	_panel(Rect2(s.x / 2 - 235, 30, 470, 40), Color(0.04, 0.13, 0.16, 0.55), 20)
-	_center(Vector2(s.x / 2, 56), banner, 14)
-	# Three primary readouts; no debug panel obscures the flying view.
-	_panel(Rect2(40, s.y - 142, 390, 92))
-	_text(Vector2(61, s.y - 114), "AIRSPEED", 12, quiet)
-	_text(Vector2(61, s.y - 70), "%03d" % int(model.velocity.length() * 3.6), 36)
-	_text(Vector2(137, s.y - 72), "km/h", 12, quiet)
-	draw_line(Vector2(185, s.y - 120), Vector2(185, s.y - 67), Color(0.5, 0.7, 0.7, 0.25), 1)
-	_text(Vector2(207, s.y - 114), "ALTITUDE / FIELD", 12, quiet)
-	_text(Vector2(207, s.y - 70), "%04d" % maxi(int(model.position.y - FlightModelScript.GEAR_HEIGHT), 0), 36)
-	_text(Vector2(308, s.y - 72), "m", 12, quiet)
-	var throttle_x: float = s.x - 230
-	_panel(Rect2(throttle_x, s.y - 142, 190, 92))
-	_text(Vector2(throttle_x + 19, s.y - 113), "THROTTLE", 12, quiet)
-	_text(Vector2(throttle_x + 111, s.y - 112), "%3d%%" % int(model.throttle * 100), 18)
-	draw_rect(Rect2(throttle_x + 20, s.y - 90, 150, 8), Color("32505a"))
-	draw_rect(Rect2(throttle_x + 20, s.y - 90, 150 * model.throttle, 8), accent)
-	_text(Vector2(throttle_x + 20, s.y - 63), "SHIFT +     CTRL −", 12, quiet)
+	%Banner.text = banner
 	var hint: String = "MOUSE  PITCH / ROLL    W/S A/D  BACKUP    Q/E  RUDDER    SPACE  BRAKE    C  CAMERA    H  HELP    ESC  SETTINGS"
 	if mouse_flight != null and not mouse_flight.enabled:
 		hint = "KEYBOARD MODE    W/S  PITCH    A/D  BANK    Q/E  RUDDER    SPACE  BRAKE    F2  MOUSE ON    ESC  SETTINGS"
-	_panel(Rect2(s.x / 2 - 480, s.y - 42, 960, 30), Color(0.035, 0.11, 0.15, 0.6), 15)
-	_center(Vector2(s.x / 2, s.y - 22), hint, 12, quiet)
+	%Keys.text = hint
 	var instruction: String = ""
 	if model.status == "ready" or model.status == "takeoff":
 		instruction = "Hold SHIFT for power. At 100 km/h, tap S or ↓ to raise the nose."
@@ -110,79 +74,48 @@ func _draw() -> void:
 		instruction = "Land in either runway direction: 110–150 km/h, wings level, descend gently."
 	if model.status == "flying" and not paused and mouse_flight != null and mouse_flight.enabled and not mouse_captured:
 		instruction = "CLICK TO CAPTURE MOUSE  ·  Keyboard controls still available  ·  ESC settings"
-	if not instruction.is_empty():
-		_panel(Rect2(s.x / 2 - 335, s.y - 128, 670, 45), Color(0.035, 0.11, 0.15, 0.74), 22)
-		_center(Vector2(s.x / 2, s.y - 99), instruction, 15, accent)
+	%Prompt.visible = not instruction.is_empty()
+	%Instruction.text = instruction
+	%Navigation.visible = model.status == "flying"
+	%Navigation.text = navigation_hint
+	%Help.visible = show_help and model.status == "ready"
+	%Notes.visible = show_help and model.status == "flying"
+	%Result.visible = model.status in ["crashed", "success"]
+	%Menu.visible = paused and not %Result.visible
+	if %Menu.visible:
+		%Toggle.text = "F2  MOUSE " + ("ON" if mouse_flight.enabled else "OFF")
+		%Invert.text = "I  " + ("PULL DOWN = UP" if mouse_flight.invert_y else "MOVE UP = UP")
+		%Sensitivity.text = _text_value(&"hud.sensitivity", {"value": "%.2f" % mouse_flight.sensitivity})
+	if %Result.visible:
+		%ResultTitle.text = "LET’S TRY THAT AGAIN" if model.status == "crashed" else "WELCOME HOME, PILOT"
+		%ResultText.text = model.crash_reason if model.status == "crashed" else _text_value(&"hud.landing", {"current":gate_count, "total":gate_total, "distance":"%.1f" % (model.distance_flown / 1000.0)})
+		%Sink.visible = model.status == "success"
+		%Sink.text = _text_value(&"hud.sink", {"speed":"%.1f" % model.touchdown_sink})
+	queue_redraw()
+
+func _draw() -> void:
+	if model == null:
+		return
+	var k: float = minf(size.x / 1600.0, size.y / 900.0)
+	var s: Vector2 = size / k
+	draw_set_transform(Vector2.ZERO, 0, Vector2.ONE * k)
 	if marker_visible and model.status == "flying":
 		var m: Vector2 = marker / k
 		if m.x > 45 and m.x < s.x - 45 and m.y > 110 and m.y < s.y - 170:
 			draw_arc(m, 13, 0, TAU, 24, accent, 2, true)
 			draw_circle(m, 2, accent)
-			_center(m + Vector2(0, -25), target_caption, 13, accent)
-	if model.status == "flying":
-		_panel(Rect2(s.x / 2 - 185, 80, 370, 31), Color(0.035, 0.11, 0.15, 0.55), 15)
-		_center(Vector2(s.x / 2, 101), navigation_hint, 12, quiet)
+			draw_string(font, m + Vector2(-120, -25), target_caption, HORIZONTAL_ALIGNMENT_CENTER, 240, 13, accent)
 	# Short dash as an unobtrusive flight reference.
 	if not model.grounded:
 		var c := Vector2(s.x * 0.5, s.y * 0.48)
 		draw_line(c + Vector2(-24, 0), c + Vector2(-8, 0), Color(1, 1, 1, 0.55), 2, true)
 		draw_line(c + Vector2(8, 0), c + Vector2(24, 0), Color(1, 1, 1, 0.55), 2, true)
 		draw_circle(c, 2, Color(1, 1, 1, 0.7))
-	if show_help and model.status == "ready":
-		_panel(Rect2(s.x / 2 - 275, 104, 550, 126), Color(0.035, 0.11, 0.15, 0.78))
-		_center(Vector2(s.x / 2, 138), "A LITTLE AIRPLANE. A WHOLE COAST TO EXPLORE.", 16, accent)
-		_center(Vector2(s.x / 2, 168), "Fly the five coastal beacons, or simply make your own route.", 16)
-		_center(Vector2(s.x / 2, 197), "Come home, touch down gently, and stop to complete your flight.", 14, quiet)
-		_center(Vector2(s.x / 2, 218), "Mouse pitch / roll  ·  Q/E rudder  ·  ESC mouse settings  ·  H hides help", 12, quiet)
-	elif show_help and model.status == "flying":
-		_panel(Rect2(40, 104, 365, 118), Color(0.035, 0.11, 0.15, 0.7))
-		_text(Vector2(59, 135), "FLIGHT NOTES", 13, accent)
-		_text(Vector2(59, 162), "Mouse pitch / roll. Stop moving to neutral.", 14)
-		_text(Vector2(59, 186), "W/S + A/D remain available for longer inputs.", 14)
-		_text(Vector2(59, 208), "L: landing practice   R: restart   M: mute", 13, quiet)
-	if paused or model.status == "crashed" or model.status == "success":
-		draw_rect(Rect2(Vector2.ZERO, s), Color(0.02, 0.07, 0.10, 0.45))
-		if paused and model.status != "crashed" and model.status != "success":
-			_draw_pause_settings(s)
-		else:
-			_panel(Rect2(s.x / 2 - 290, s.y / 2 - 115, 580, 230), Color(0.035, 0.11, 0.15, 0.96), 18)
-			var title: String = "LET’S TRY THAT AGAIN" if model.status == "crashed" else "WELCOME HOME, PILOT"
-			var body: String = model.crash_reason if model.status == "crashed" else "Safe landing · %d / %d beacons · %.1f km flown" % [gate_count, gate_total, model.distance_flown / 1000.0]
-			_center(Vector2(s.x / 2, s.y / 2 - 57), title, 27, accent)
-			_center(Vector2(s.x / 2, s.y / 2 - 11), body, 17)
-			if model.status == "success":
-				_center(Vector2(s.x / 2, s.y / 2 + 23), "Touchdown descent  %.1f m/s" % model.touchdown_sink, 14, quiet)
-			_center(Vector2(s.x / 2, s.y / 2 + 72), "R  NEW DEPARTURE    ·    L  LANDING PRACTICE", 13, quiet)
-
-func _draw_pause_settings(s: Vector2) -> void:
-	var center: Vector2 = s * 0.5
-	_panel(Rect2(center - Vector2(290, 175), Vector2(580, 350)), Color(0.035, 0.11, 0.15, 0.96), 18)
-	_center(center + Vector2(0, -126), "FLIGHT PAUSED", 27, accent)
-	_center(center + Vector2(0, -92), "Mouse released · settings never steer the aircraft", 14, quiet)
-	if mouse_flight != null:
-		_panel(Rect2(center + Vector2(-245, -55), Vector2(232, 40)), Color("29434c"), 8)
-		_panel(Rect2(center + Vector2(13, -55), Vector2(232, 40)), Color("29434c"), 8)
-		_center(center + Vector2(-129, -29), "F2  MOUSE " + ("ON" if mouse_flight.enabled else "OFF"), 15)
-		_center(center + Vector2(129, -29), "I  " + ("PULL DOWN = UP" if mouse_flight.invert_y else "MOVE UP = UP"), 14)
-		_panel(Rect2(center + Vector2(-245, 5), Vector2(44, 40)), Color("29434c"), 8)
-		_panel(Rect2(center + Vector2(201, 5), Vector2(44, 40)), Color("29434c"), 8)
-		_center(center + Vector2(-223, 32), "−", 22)
-		_center(center + Vector2(223, 32), "+", 22)
-		_center(center + Vector2(0, 31), "SENSITIVITY  %.2f×" % mouse_flight.sensitivity, 17)
-		_center(center + Vector2(0, 70), "[ / ] adjust · I reverses mouse Y only · keyboard unchanged", 13, quiet)
-	_center(center + Vector2(0, 122), "ESC  RESUME & CAPTURE    ·    R  RESTART    ·    L  LANDING PRACTICE", 12, accent)
 
 func pause_mouse_option_at(point: Vector2) -> String:
-	if not paused or model == null or model.status == "crashed" or model.status == "success":
+	if not %Menu.visible:
 		return ""
-	var scale_factor: float = minf(size.x / 1600.0, size.y / 900.0)
-	var local: Vector2 = point / scale_factor - size / scale_factor * 0.5
-	if Rect2(-245, -55, 232, 40).has_point(local):
-		return "toggle"
-	if Rect2(13, -55, 232, 40).has_point(local):
-		return "invert"
-	if Rect2(-245, 5, 44, 40).has_point(local):
-		return "less"
-	if Rect2(201, 5, 44, 40).has_point(local):
-		return "more"
+	for button: Button in [%Toggle, %Invert, %Less, %More]:
+		if button.get_global_rect().has_point(point):
+			return str(button.name).to_lower()
 	return ""
