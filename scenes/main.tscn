@@ -1,10 +1,14 @@
 [gd_scene format=3]
 
+[ext_resource type="PackedScene" path="res://games/protocols/godot_party_default_protocol/audio/game_audio.tscn" id="game_audio"]
+
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/airfield.tscn" id="airfield"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/airplane.tscn" id="plane"]
 [ext_resource type="PackedScene" path="res://games/minigame/godot_party_default_flight/scenes/instruments.tscn" id="hud"]
 
 [ext_resource type="Script" path="res://games/minigame/godot_party_default_flight/scripts/main.gd" id="1_qxcme"]
+
+[ext_resource type="Resource" path="../assets/propeller_cue.tres" id="propeller_cue"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sh7xr"]
 sky_top_color = Color(0.29411766, 0.5803922, 0.69411767, 1)
@@ -86,6 +90,7 @@ ring_segments = 6
 
 [node name="Coastline" type="Node3D" unique_id=1395477749]
 script = ExtResource("1_qxcme")
+engine_sound = ExtResource("propeller_cue")
 
 [node name="WorldEnvironment1" type="WorldEnvironment" parent="." unique_id=1284485831]
 environment = SubResource("Environment_5iqwl")
@@ -159,3 +164,8 @@ position = Vector3(0,1,0)
 layer = -2
 
 [node name="Instruments" parent="GameHUD" instance=ExtResource("hud")]
+
+[node name="GameAudio" parent="." instance=ExtResource("game_audio")]
+
+[node name="EngineSound" type="AudioStreamPlayer" parent="."]
+volume_db = -24.0

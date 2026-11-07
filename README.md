@@ -88,3 +88,9 @@ godot --headless --path . --quit-after 120
 ## 研究与许可
 
 先检查了 Godot 固定翼案例，再选择独立、较小的原创实现；**未导入第三方游戏代码、飞机模型或美术素材**。案例链接、精确版本及取舍见 [`docs/REFERENCES.md`](docs/REFERENCES.md)。代码和原创资源使用 [MIT](LICENSE)。Godot 引擎本身不包含在仓库内，遵循其自身许可。
+
+## 正式单人接入（G02）
+
+正式场景由协议 SoloRound 显式注入 PartyInput 与翻译，准备阶段不启动模拟；确认开始后才接受操作，结算/取消时显式停止。正式 Esc 打开框架菜单，键盘与按钮遵守同一输入屏蔽；菜单本身不暂停计时。包内 `settings.gd` 声明可改键动作，F6 使用同一默认绑定且不增删全局 InputMap。观战端不运行本机模拟。
+
+螺旋桨使用 `assets/propeller_cue.tres` 和固定 `EngineSound`，播放流复制循环参数；油门控制音量/音高，M 静音与协议分类音量相乘。菜单或失焦释放鼠标与残留输入；关闭菜单后点击重新捕获。正式模式的鼠标模式、反转、灵敏度仍可用声明的 F2/I/方括号动作调整；画质由协议处理实际 WorldEnvironment/Sun。

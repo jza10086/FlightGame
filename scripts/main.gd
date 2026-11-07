@@ -1,5 +1,10 @@
 extends Node3D
-const SoloRound = preload("res://games/protocols/godot_party_default_protocol/solo_round.gd")
+const Controls = preload("res://games/protocols/godot_party_default_protocol/solo_controls.gd")
+const Settings = preload("res://games/minigame/godot_party_default_flight/settings.gd")
+var controls: Controls = Controls.new(Settings.schema())
+var _active: bool = false
+var _stopped: bool = false
+var _text_source: RefCounted
 
 signal completed(metrics: Dictionary)
 
@@ -19,46 +24,37 @@ var gates: Array[Node3D] = []
 var gate_index: int = 0
 var gate_points: Array[Vector3] = []
 var previous_position := Vector3.ZERO
+@export var engine_sound: PartyAudioCue
 var engine_audio: AudioStreamPlayer
 var muted: bool = false
 var engine_volume: float = 0.0
 var landing_mode: bool = false
+var _completion_reported: bool = false
 var mouse_flight: MouseFlight = MouseFlight.new()
 var mouse_captured: bool = false
 var window_focused: bool = true
 var capture_guard: float = 0.0
-const FLIGHT_ACTIONS: Array[String] = ["flight_pitch_up", "flight_pitch_down", "flight_bank_left", "flight_bank_right", "flight_yaw_left", "flight_yaw_right", "flight_throttle_up", "flight_throttle_down", "flight_brake"]
 
 func _ready() -> void:
-	_bind_inputs()
 	plane = $Airplane
 	camera = $ChaseCamera
 	hud = $GameHUD/Instruments
-	if get_parent() is SoloRound:
-		hud.i18n = get_parent().api.i18n
+	hud.i18n = _text_source
+	hud.formal = controls.context != null
 	hud.model = model
 	hud.mouse_flight = mouse_flight
 	gates.assign($BeaconRoute.get_children())
 	for gate: Node3D in gates:
 		gate_points.append(gate.global_position)
 	hud.gate_total = gates.size()
-	_make_audio()
+	assert(engine_sound != null and engine_sound.validate() == OK, "Assign the propeller cue.")
+	engine_audio = $EngineSound
+	engine_audio.stream = engine_sound.playback_stream()
+	engine_audio.volume_db = engine_sound.volume_db
 	reset_flight()
-
-func _bind_inputs() -> void:
-	var bindings: Dictionary = {
-		"flight_pitch_up": [KEY_S, KEY_DOWN], "flight_pitch_down": [KEY_W, KEY_UP],
-		"flight_bank_left": [KEY_A, KEY_LEFT], "flight_bank_right": [KEY_D, KEY_RIGHT],
-		"flight_yaw_left": [KEY_Q], "flight_yaw_right": [KEY_E],
-		"flight_throttle_up": [KEY_SHIFT], "flight_throttle_down": [KEY_CTRL], "flight_brake": [KEY_SPACE]
-	}
-	for action: String in bindings:
-		if not InputMap.has_action(action):
-			InputMap.add_action(action)
-		for key: int in bindings[action]:
-			var event := InputEventKey.new()
-			event.physical_keycode = key
-			InputMap.action_add_event(action, event)
+	$GameHUD.hide()
+	if controls.context == null:
+		solo_start()
 
 func _update_gates() -> void:
 	for i: int in gates.size():
@@ -67,20 +63,11 @@ func _update_gates() -> void:
 		var mat: StandardMaterial3D = mesh.mesh.material
 		mat.albedo_color = Color("ffc16c") if i == gate_index else Color("8dbcb4")
 
-func _make_audio() -> void:
-	if DisplayServer.get_name() == "headless":
-		return
-	engine_audio = AudioStreamPlayer.new()
-	var stream: AudioStreamWAV = load("res://games/minigame/godot_party_default_flight/assets/propeller.wav")
-	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-	stream.loop_begin = 0
-	stream.loop_end = 22050
-	engine_audio.stream = stream
-	engine_audio.volume_db = -24.0
-	add_child(engine_audio)
-	engine_audio.play()
-
 func _process(dt: float) -> void:
+	if not _active:
+		return
+	if not controls.allowed() and mouse_captured:
+		_release_mouse()
 	capture_guard = maxf(capture_guard - dt, 0.0)
 	hud.mouse_captured = mouse_captured
 	_update_camera(dt)
@@ -103,20 +90,22 @@ func _process(dt: float) -> void:
 	hud.navigation_hint = "%s  ·  %s  ·  %d m" % ["BEACON %02d" % (gate_index + 1) if gate_index < gate_points.size() and not landing_mode else "AIRFIELD", direction, int(delta_target.length())]
 
 func _physics_process(dt: float) -> void:
-	if paused:
+	if not _active or paused:
 		return
+	if not controls.allowed():
+		_release_mouse()
 	var mouse_command: Vector2 = mouse_flight.sample(dt) if mouse_captured else Vector2.ZERO
 	# Keyboard retains authority on its own axis, so it never fights a mouse tail.
-	var keyboard_pitch: float = Input.get_axis("flight_pitch_down", "flight_pitch_up")
-	var keyboard_roll: float = Input.get_axis("flight_bank_left", "flight_bank_right")
+	var keyboard_pitch: float = controls.get_axis("flight_pitch_down", "flight_pitch_up")
+	var keyboard_roll: float = controls.get_axis("flight_bank_left", "flight_bank_right")
 	var elevator: float = keyboard_pitch if keyboard_pitch != 0.0 else mouse_command.y
 	var aileron: float = keyboard_roll if keyboard_roll != 0.0 else mouse_command.x
-	var rudder: float = Input.get_axis("flight_yaw_left", "flight_yaw_right")
+	var rudder: float = controls.get_axis("flight_yaw_left", "flight_yaw_right")
 	if model.status != "crashed" and model.status != "success":
-		model.throttle = clampf(model.throttle + Input.get_axis("flight_throttle_down", "flight_throttle_up") * dt * 0.42, 0.0, 1.0)
+		model.throttle = clampf(model.throttle + controls.get_axis("flight_throttle_down", "flight_throttle_up") * dt * 0.42, 0.0, 1.0)
 	var starting: bool = model.status == "ready"
 	previous_position = model.position
-	model.step(dt, elevator, aileron, rudder, Input.is_action_pressed("flight_brake"),
+	model.step(dt, elevator, aileron, rudder, controls.is_pressed("flight_brake"),
 		World.terrain_height(model.position.x, model.position.z), World.is_runway(model.position))
 	if starting and model.status == "takeoff":
 		hud.show_help = false
@@ -132,7 +121,9 @@ func _physics_process(dt: float) -> void:
 	plane.set_crashed(model.status == "crashed")
 	if model.status == "crashed" or model.status == "success":
 		_release_mouse()
-		completed.emit({"outcome": "安全着陆" if model.status == "success" else "坠机", "gates": gate_index})
+		if not _completion_reported:
+			_completion_reported = true
+			completed.emit({"outcome": "安全着陆" if model.status == "success" else "坠机", "gates": gate_index})
 		return
 	if gate_index < gate_points.size() and not landing_mode and model.status == "flying":
 		# A swept proximity test means a low frame rate cannot skip a beacon.
@@ -159,36 +150,36 @@ func _update_audio(dt: float) -> void:
 		return
 	var active: bool = not paused and model.status != "crashed" and model.status != "success" and not muted
 	engine_volume = lerpf(engine_volume, 0.20 + model.throttle * 0.8 if active else 0.0, minf(dt * 6.0, 1.0))
-	engine_audio.volume_db = linear_to_db(maxf(engine_volume, 0.001)) - 24.0
-	engine_audio.pitch_scale = 0.65 + model.throttle * 0.65
+	engine_audio.volume_db = linear_to_db(maxf(engine_volume, 0.001)) + engine_sound.volume_db
+	engine_audio.pitch_scale = engine_sound.pitch_scale * (0.65 + model.throttle * 0.65)
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo:
+	if not controls.allowed():
 		return
-	match event.physical_keycode:
-		KEY_R:
-			reset_flight()
-		KEY_L:
-			landing_practice()
-		KEY_ESCAPE:
-			if model.status != "crashed" and model.status != "success":
-				_set_paused(not paused)
-		KEY_F2:
-			_change_mouse_option("toggle")
-		KEY_I:
-			_change_mouse_option("invert")
-		KEY_BRACKETLEFT:
-			_change_mouse_option("less")
-		KEY_BRACKETRIGHT:
-			_change_mouse_option("more")
-		KEY_H:
-			hud.show_help = not hud.show_help
-		KEY_C:
-			wide_camera = not wide_camera
-		KEY_M:
-			muted = not muted
+	if controls.context == null and event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+		if model.status not in ["crashed", "success"]:
+			_set_paused(not paused)
+	elif controls.matches(event, &"flight_reset"):
+		reset_flight()
+	elif controls.matches(event, &"flight_landing"):
+		landing_practice()
+	elif controls.matches(event, &"flight_mouse"):
+		_change_mouse_option("toggle")
+	elif controls.matches(event, &"flight_invert"):
+		_change_mouse_option("invert")
+	elif controls.matches(event, &"flight_less"):
+		_change_mouse_option("less")
+	elif controls.matches(event, &"flight_more"):
+		_change_mouse_option("more")
+	elif controls.matches(event, &"flight_help"):
+		hud.show_help = not hud.show_help
+	elif controls.matches(event, &"flight_camera"):
+		wide_camera = not wide_camera
+	elif controls.matches(event, &"flight_mute"):
+		muted = not muted
 
 func reset_flight() -> void:
+	_completion_reported = false
 	var restore_capture: bool = mouse_captured and model.status != "crashed" and model.status != "success"
 	_release_mouse()
 	_clear_flight_inputs()
@@ -225,26 +216,24 @@ func landing_practice() -> void:
 	_update_camera(1.0, true)
 
 func _exit_tree() -> void:
-	for action: String in ["flight_pitch_up", "flight_pitch_down", "flight_bank_left", "flight_bank_right", "flight_yaw_left", "flight_yaw_right", "flight_throttle_up", "flight_throttle_down", "flight_brake"]:
-		InputMap.erase_action(action)
 	_release_mouse()
-	if is_instance_valid(engine_audio):
-		engine_audio.stop()
-		engine_audio.stream = null
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
 		window_focused = false
-		if hud != null:
+		_release_mouse()
+		if hud != null and controls.context == null:
 			_set_paused(true)
 	elif what == NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		window_focused = true
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	if not controls.allowed():
+		return
 	if event is InputEventMouseMotion:
 		if mouse_captured and not paused and window_focused and capture_guard <= 0.0:
 			mouse_flight.feed_motion(event.screen_relative)
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	elif controls.matches(event, &"flight_capture"):
 		if paused:
 			var option: String = hud.pause_mouse_option_at(event.position)
 			if not option.is_empty():
@@ -254,12 +243,9 @@ func _input(event: InputEvent) -> void:
 
 func _clear_flight_inputs() -> void:
 	mouse_flight.clear()
-	for action: String in FLIGHT_ACTIONS:
-		if InputMap.has_action(action):
-			Input.action_release(action)
 
 func _capture_mouse() -> void:
-	if not mouse_flight.enabled or paused or not window_focused or model.status == "crashed" or model.status == "success":
+	if not controls.allowed() or not mouse_flight.enabled or paused or not window_focused or model.status == "crashed" or model.status == "success":
 		return
 	_clear_flight_inputs()
 	capture_guard = 0.08 # Ignore the platform's capture/warp transition, not player motion afterwards.
@@ -295,3 +281,40 @@ func _change_mouse_option(option: String) -> void:
 			mouse_flight.set_sensitivity(mouse_flight.sensitivity - 0.25)
 		"more":
 			mouse_flight.set_sensitivity(mouse_flight.sensitivity + 0.25)
+
+## Injected before entering the tree. F6 leaves the formal dependencies unset.
+func solo_setup(input: PartyInput, text_source: RefCounted) -> void:
+	controls.bind(input)
+	_text_source = text_source
+	$GameAudio.prepare_scope()
+
+func solo_start() -> void:
+	if _stopped:
+		return
+	_active = true
+	controls.enabled = true
+	$GameHUD.show()
+	$GameAudio.route_player(engine_audio)
+	engine_audio.play()
+
+func solo_stop() -> void:
+	if _stopped:
+		return
+	_stopped = true
+	_active = false
+	controls.enabled = false
+	set_process(false)
+	set_physics_process(false)
+	set_process_unhandled_input(false)
+	set_process_unhandled_key_input(false)
+	if not is_node_ready():
+		return
+	_release_mouse()
+	$GameHUD.hide()
+	$GameAudio.close_scope()
+
+func solo_graphics_targets() -> Dictionary:
+	return {"world": $WorldEnvironment1, "sun": $DirectionalLight3D2}
+
+func solo_audio_target() -> PartyGameAudio:
+	return $GameAudio

@@ -7,6 +7,7 @@ const FlightModelScript = preload("res://games/minigame/godot_party_default_flig
 
 var model: FlightModelScript
 var paused: bool = false
+var formal: bool = false
 var mouse_flight: MouseFlightInputScript
 var mouse_captured: bool = false
 var show_help: bool = true
@@ -53,7 +54,7 @@ func _process(_delta: float) -> void:
 	var hint: String = "MOUSE  PITCH / ROLL    W/S A/D  BACKUP    Q/E  RUDDER    SPACE  BRAKE    C  CAMERA    H  HELP    ESC  SETTINGS"
 	if mouse_flight != null and not mouse_flight.enabled:
 		hint = "KEYBOARD MODE    W/S  PITCH    A/D  BANK    Q/E  RUDDER    SPACE  BRAKE    F2  MOUSE ON    ESC  SETTINGS"
-	%Keys.text = hint
+	%Keys.text = _text_value(&"hud.formal_controls", {}) if formal else hint
 	var instruction: String = ""
 	if model.status == "ready" or model.status == "takeoff":
 		instruction = "Hold SHIFT for power. At 100 km/h, tap S or ↓ to raise the nose."
@@ -75,7 +76,7 @@ func _process(_delta: float) -> void:
 	if model.status == "flying" and not paused and mouse_flight != null and mouse_flight.enabled and not mouse_captured:
 		instruction = "CLICK TO CAPTURE MOUSE  ·  Keyboard controls still available  ·  ESC settings"
 	%Prompt.visible = not instruction.is_empty()
-	%Instruction.text = instruction
+	%Instruction.text = _text_value(&"hud.formal_capture", {}) if formal and not mouse_captured and mouse_flight.enabled and model.status in ["ready", "takeoff", "flying"] else instruction
 	%Navigation.visible = model.status == "flying"
 	%Navigation.text = navigation_hint
 	%Help.visible = show_help and model.status == "ready"

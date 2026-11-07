@@ -36,3 +36,66 @@ msgstr "Safe landing · {current} / {total} beacons · {distance} km flown"
 
 msgid "hud.sink"
 msgstr "Touchdown descent  {speed} m/s"
+
+msgid "抬头"
+msgstr "抬头"
+
+msgid "低头"
+msgstr "低头"
+
+msgid "向左滚转"
+msgstr "向左滚转"
+
+msgid "向右滚转"
+msgstr "向右滚转"
+
+msgid "左方向舵"
+msgstr "左方向舵"
+
+msgid "右方向舵"
+msgstr "右方向舵"
+
+msgid "增加油门"
+msgstr "增加油门"
+
+msgid "减少油门"
+msgstr "减少油门"
+
+msgid "刹车"
+msgstr "刹车"
+
+msgid "重新起飞"
+msgstr "重新起飞"
+
+msgid "着陆练习"
+msgstr "着陆练习"
+
+msgid "鼠标操纵开关"
+msgstr "鼠标操纵开关"
+
+msgid "反转鼠标"
+msgstr "反转鼠标"
+
+msgid "降低灵敏度"
+msgstr "降低灵敏度"
+
+msgid "提高灵敏度"
+msgstr "提高灵敏度"
+
+msgid "操作说明"
+msgstr "操作说明"
+
+msgid "切换相机"
+msgstr "切换相机"
+
+msgid "声音开关"
+msgstr "声音开关"
+
+msgid "捕获鼠标"
+msgstr "捕获鼠标"
+
+msgid "hud.formal_controls"
+msgstr "鼠标 / W S A D 俯仰与滚转 · Q E 方向舵 · Space 刹车 · C 镜头 · H 帮助 · Esc 菜单"
+
+msgid "hud.formal_capture"
+msgstr "点击捕获鼠标 · 键盘仍可操纵 · Esc 打开菜单并释放鼠标"
