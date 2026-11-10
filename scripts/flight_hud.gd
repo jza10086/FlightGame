@@ -1,9 +1,9 @@
 class_name FlightHUD
 extends Control
 
-const MouseFlightInputScript = preload("res://games/minigame/godot_party_default_flight/scripts/mouse_flight_input.gd")
+const MouseFlightInputScript = preload("res://games/minigame/gp_flight/scripts/mouse_flight_input.gd")
 
-const FlightModelScript = preload("res://games/minigame/godot_party_default_flight/scripts/flight_model.gd")
+const FlightModelScript = preload("res://games/minigame/gp_flight/scripts/flight_model.gd")
 
 var model: FlightModelScript
 var paused: bool = false
@@ -25,7 +25,7 @@ var quiet := Color("b5d3cf")
 var accent := Color("ffc377")
 var dark := Color(0.035, 0.11, 0.15, 0.84)
 
-const DefaultText: Translation = preload("res://games/minigame/godot_party_default_flight/i18n/zh_Hans.po")
+const DefaultText: Translation = preload("res://games/minigame/gp_flight/i18n/zh_Hans.po")
 var i18n: RefCounted
 
 func _text_value(key: StringName, values: Dictionary) -> String:

@@ -1,6 +1,6 @@
 extends Node3D
 const Controls = preload("res://games/protocols/godot_party_default_protocol/solo_controls.gd")
-const Settings = preload("res://games/minigame/godot_party_default_flight/settings.gd")
+const Settings = preload("res://games/minigame/gp_flight/settings.gd")
 var controls: Controls = Controls.new(Settings.schema())
 var _active: bool = false
 var _stopped: bool = false
@@ -8,10 +8,10 @@ var _text_source: RefCounted
 
 signal completed(metrics: Dictionary)
 
-const Flight = preload("res://games/minigame/godot_party_default_flight/scripts/flight_model.gd")
-const World = preload("res://games/minigame/godot_party_default_flight/scripts/coastal_world.gd")
-const MouseFlight = preload("res://games/minigame/godot_party_default_flight/scripts/mouse_flight_input.gd")
-const HUD = preload("res://games/minigame/godot_party_default_flight/scripts/flight_hud.gd")
+const Flight = preload("res://games/minigame/gp_flight/scripts/flight_model.gd")
+const World = preload("res://games/minigame/gp_flight/scripts/coastal_world.gd")
+const MouseFlight = preload("res://games/minigame/gp_flight/scripts/mouse_flight_input.gd")
+const HUD = preload("res://games/minigame/gp_flight/scripts/flight_hud.gd")
 
 var model: Flight = Flight.new()
 var plane: Node3D
