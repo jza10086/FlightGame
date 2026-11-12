@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "core_api_major": 5,
-  "package_version": "1.0.11",
+  "package_version": "1.0.12",
   "id": "gp_flight",
   "name": "COASTLINE · 海岸飞行",
   "kind": "minigame",
@@ -13,7 +13,7 @@
   ],
   "introduction": "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。",
   "dependencies": {
-    "godot_party_default_protocol": "1.0.10"
+    "godot_party_default_protocol": "1.0.11"
   },
   "adapters": [
     {
