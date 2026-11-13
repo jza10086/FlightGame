@@ -1,62 +1,10 @@
 {
-  "manifest_version": 2,
-  "core_api_major": 6,
-  "package_version": "1.0.15",
-  "id": "gp_flight",
   "name": "COASTLINE · 海岸飞行",
   "kind": "minigame",
-  "supported_systems": [
-    "windows"
-  ],
-  "config_schema": "settings.gd",
-  "entry": "party_round.tscn",
-  "player_counts": [
-    1
-  ],
-  "introduction": "从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。",
+  "package_version": "0.0.1",
+  "framework_version": "0.0.1",
+  "remark": "",
   "dependencies": {
-    "godot_party_default_protocol": "1.0.14"
-  },
-  "adapters": [
-    {
-      "id": "standard",
-      "protocol": {
-        "id": "godot_party_default_protocol",
-        "api_major": 1,
-        "min_api_minor": 0
-      },
-      "config_schema": "settings.gd",
-      "entry": "adapter.gd"
-    }
-  ],
-  "localization": {
-    "supported_locales": [
-      "zh_Hans"
-    ],
-    "fallback_locale": "zh_Hans",
-    "translations": {
-      "zh_Hans": "i18n/zh_Hans.po"
-    }
-  },
-  "controls": {
-    "flight_pitch_up": "抬头",
-    "flight_pitch_down": "低头",
-    "flight_bank_left": "向左滚转",
-    "flight_bank_right": "向右滚转",
-    "flight_yaw_left": "左方向舵",
-    "flight_yaw_right": "右方向舵",
-    "flight_throttle_up": "增加油门",
-    "flight_throttle_down": "减少油门",
-    "flight_brake": "刹车",
-    "flight_reset": "重新起飞",
-    "flight_landing": "着陆练习",
-    "flight_mouse": "鼠标操纵开关",
-    "flight_invert": "反转鼠标",
-    "flight_less": "降低灵敏度",
-    "flight_more": "提高灵敏度",
-    "flight_help": "操作说明",
-    "flight_camera": "切换相机",
-    "flight_mute": "声音开关",
-    "flight_capture": "捕获鼠标"
+    "godot_party_default_protocol": "~0.0.1"
   }
 }
