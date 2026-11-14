@@ -44,7 +44,7 @@
 
 按 Esc 打开简洁暂停面板，可直接点击鼠标开关、反转 Y 和灵敏度 −/+，也可用 F2、I、[、]。设置在本次运行中保留（包括 R 重开），退出后恢复默认。Esc 恢复会清除旧鼠标量再捕获；切出窗口自动暂停/释放，切回后需要主动按 Esc 继续。坠毁或完成飞行会释放鼠标。
 
-参考 EA 官方飞行控制与反转/灵敏度选项，但没有机械照搬某一代《战地》的所有键位；原有游戏键位保持兼容。研究链接见 [`docs/REFERENCES.md`](docs/REFERENCES.md)。
+参考 EA 官方飞行控制与反转/灵敏度选项，但没有机械照搬某一代《战地》的所有键位；原有游戏键位保持兼容。研究链接见 [`doc/gp_flight_references.md`](gp_flight_references.md)。
 
 ### 第一次起飞
 
@@ -75,19 +75,11 @@
 
 ## 验证
 
-```sh
-godot --headless --path . --editor --import --quit
-godot --headless --path . --script tests/flight_model_test.gd
-godot --headless --path . --script tests/session_test.gd
-godot --headless --path . --script tests/mouse_input_test.gd
-godot --headless --path . --quit-after 120
-```
-
-定向测试覆盖静止、跑道内起飞、坡度转弯、无动力滑翔、禁止悬停、迎角失速/恢复、温和着陆与刹停、硬着陆、水面接触、倾侧着陆和反复重置；鼠标测试覆盖映射/反转、灵敏度、衰减/限幅、未饱和输入的帧率独立性、捕获/暂停/失焦/重开生命周期。原生视觉验证使用 Godot 4.7.2 的 Compatibility 渲染器；性能随 GPU 和分辨率变化，软件渲染不代表独显性能。
+最近记录与未完成验收见 [gp_flight 开发记录](gp_flight_development.md)。按本次改动选取必要检查；旧测试命令不作为当前入口。
 
 ## 研究与许可
 
-先检查了 Godot 固定翼案例，再选择独立、较小的原创实现；**未导入第三方游戏代码、飞机模型或美术素材**。案例链接、精确版本及取舍见 [`docs/REFERENCES.md`](docs/REFERENCES.md)。代码和原创资源使用 [MIT](LICENSE)。Godot 引擎本身不包含在仓库内，遵循其自身许可。
+先检查了 Godot 固定翼案例，再选择独立、较小的原创实现；**未导入第三方游戏代码、飞机模型或美术素材**。案例链接、精确版本及取舍见 [`doc/gp_flight_references.md`](gp_flight_references.md)。代码和原创资源使用 [MIT](../LICENSE)。Godot 引擎本身不包含在仓库内，遵循其自身许可。
 
 ## 正式单人接入（G02）
 
@@ -96,3 +88,10 @@ godot --headless --path . --quit-after 120
 螺旋桨使用 `assets/propeller_cue.tres` 和固定 `EngineSound`，播放流复制循环参数；油门控制音量/音高，M 静音与协议分类音量相乘。菜单或失焦释放鼠标与残留输入；关闭菜单后点击重新捕获。正式模式的鼠标模式、反转、灵敏度仍可用声明的 F2/I/方括号动作调整；画质由协议处理实际 WorldEnvironment/Sun。
 
 从海岸机场起飞，穿过航标并安全降落。坠机也会结束本次飞行。
+
+## 包内开发文档
+
+未带 `res://` 的源码路径以本包根目录为基准。
+
+- [M03 海岸飞行　A　依赖 G02、G03](gp_flight_development.md)
+- [Fixed-wing references reviewed before implementation](gp_flight_references.md)
