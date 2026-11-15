@@ -99,3 +99,6 @@ msgstr "鼠标 / W S A D 俯仰与滚转 · Q E 方向舵 · Space 刹车 · C �
 
 msgid "hud.formal_capture"
 msgstr "点击捕获鼠标 · 键盘仍可操纵 · Esc 打开菜单并释放鼠标"
+
+msgid "package.name"
+msgstr "COASTLINE · 海岸飞行"

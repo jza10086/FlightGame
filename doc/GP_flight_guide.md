@@ -44,7 +44,7 @@
 
 按 Esc 打开简洁暂停面板，可直接点击鼠标开关、反转 Y 和灵敏度 −/+，也可用 F2、I、[、]。设置在本次运行中保留（包括 R 重开），退出后恢复默认。Esc 恢复会清除旧鼠标量再捕获；切出窗口自动暂停/释放，切回后需要主动按 Esc 继续。坠毁或完成飞行会释放鼠标。
 
-参考 EA 官方飞行控制与反转/灵敏度选项，但没有机械照搬某一代《战地》的所有键位；原有游戏键位保持兼容。研究链接见 [`doc/gp_flight_references.md`](gp_flight_references.md)。
+参考 EA 官方飞行控制与反转/灵敏度选项，但没有机械照搬某一代《战地》的所有键位；原有游戏键位保持兼容。研究链接见 [`doc/GP_flight_references.md`](GP_flight_references.md)。
 
 ### 第一次起飞
 
@@ -75,11 +75,11 @@
 
 ## 验证
 
-最近记录与未完成验收见 [gp_flight 开发记录](gp_flight_development.md)。按本次改动选取必要检查；旧测试命令不作为当前入口。
+最近记录与未完成验收见 [GP_flight 开发记录](GP_flight_development.md)。按本次改动选取必要检查；旧测试命令不作为当前入口。
 
 ## 研究与许可
 
-先检查了 Godot 固定翼案例，再选择独立、较小的原创实现；**未导入第三方游戏代码、飞机模型或美术素材**。案例链接、精确版本及取舍见 [`doc/gp_flight_references.md`](gp_flight_references.md)。代码和原创资源使用 [MIT](../LICENSE)。Godot 引擎本身不包含在仓库内，遵循其自身许可。
+先检查了 Godot 固定翼案例，再选择独立、较小的原创实现；**未导入第三方游戏代码、飞机模型或美术素材**。案例链接、精确版本及取舍见 [`doc/GP_flight_references.md`](GP_flight_references.md)。代码和原创资源使用 [MIT](../LICENSE)。Godot 引擎本身不包含在仓库内，遵循其自身许可。
 
 ## 正式单人接入（G02）
 
@@ -93,5 +93,5 @@
 
 未带 `res://` 的源码路径以本包根目录为基准。
 
-- [M03 海岸飞行　A　依赖 G02、G03](gp_flight_development.md)
-- [Fixed-wing references reviewed before implementation](gp_flight_references.md)
+- [M03 海岸飞行　A　依赖 G02、G03](GP_flight_development.md)
+- [Fixed-wing references reviewed before implementation](GP_flight_references.md)
