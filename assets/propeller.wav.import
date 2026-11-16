@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://ujquhwsycpsj"
-path="res://.godot/imported/propeller.wav-6c80ff9a93491405cca1c9db7e87cdfd.sample"
+path="res://.godot/imported/propeller.wav-c2fa475b0d8eb1d582c3978d48eb3c44.sample"
 
 [deps]
 
 source_file="res://games/minigame/GP_flight/assets/propeller.wav"
-dest_files=["res://.godot/imported/propeller.wav-6c80ff9a93491405cca1c9db7e87cdfd.sample"]
+dest_files=["res://.godot/imported/propeller.wav-c2fa475b0d8eb1d582c3978d48eb3c44.sample"]
 
 [params]
 
